@@ -1,9 +1,9 @@
 Android ORM database, support Async CRUD、 Annotation and version upgrade. There are two kinds of easy API to CRUD.
 
-#install
+# install
 xxx
-#how to use
-##1.init database
+# how to use
+## 1.init database
 In your Application's onCreate method:
 
 ```
@@ -13,7 +13,7 @@ new EasySQLiteHelper.Builder(this)
                 .build();
 ```
 
-##2.create a table
+## 2.create a table
 Under your app's assets dir, create a file named "create.sql", then you can write all your standard “create table sql clause” in this file. This file will be executed when app first run.
 
 ```
@@ -23,7 +23,7 @@ create Table person (
 );
 ```
 
-##3.create a Person.java
+## 3.create a Person.java
 The Person.java will be auto related to the person table with Annotation. Actually, there will auto generate a PersonDao.java.
 
 ```
@@ -36,16 +36,16 @@ public class Person {
 }
 ```
 
-##4.make your project
+## 4.make your project
 When you finish Person.java, make your project, then the db-compiler will auto compile the custom annotation and generate a PersonDao.java for Person.java, now you can you PersonDao to CRUD.
 
-#CRUD API
+# CRUD API
 
 ```
 PersonDao mPersonDao = new PersonDao();
 ```
 
-##1.insert
+## 1.insert
 
 ```
 mPersonDao.insert(tom, new DBListener<Person>() {
@@ -56,7 +56,7 @@ mPersonDao.insert(tom, new DBListener<Person>() {
         });
 ```
 
-##2.delete
+## 2.delete
 
 ```
 mPersonDao.newDeleter()
@@ -77,7 +77,7 @@ mPersonDao.delete("name = ?", new String[]{"tom"}, new DBListener<Person>() {
         });
 ```
 
-##3.update
+## 3.update
 
 ```
 mPersonDao.newUpdater()
@@ -98,7 +98,7 @@ mPersonDao.update(person, "name = ?", new String[]{"tom"}, new DBListener<Person
         });
 ```
 
-##4.query
+## 4.query
 
 ```
 mPersonDao.newQuery()
@@ -119,7 +119,7 @@ mPersonDao.queryOne("name = ?", new String[]{"tom"}, new DBListener<Person>() {
         });
 ```
 
-#database upgrade
+# database upgrade
 
 ```
 --assets
