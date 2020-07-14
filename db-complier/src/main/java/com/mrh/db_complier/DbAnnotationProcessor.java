@@ -25,7 +25,7 @@ import javax.lang.model.util.Elements;
 public class DbAnnotationProcessor extends AbstractProcessor {
     private Elements mElementUtils;
     private Filer mFiler;
-    private Map<String, DaoInfo> mDaoProxyMap = new HashMap<>();
+    private Map<String, DaoInfo> mDaoInfoMap = new HashMap<>();
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnvironment) {
@@ -55,8 +55,8 @@ public class DbAnnotationProcessor extends AbstractProcessor {
      */
     @Override
     public boolean process(Set<? extends TypeElement> set, RoundEnvironment roundEnvironment) {
-        new DaoInfoFinder().findDaoProxy(roundEnvironment, mDaoProxyMap, mElementUtils);
-        new DaoFileGenerator().generateDaoFiles(mDaoProxyMap, mFiler);
+        new DaoInfoFinder().findDaoProxy(roundEnvironment, mDaoInfoMap, mElementUtils);
+        new DaoFileGenerator().generateDaoFiles(mDaoInfoMap, mFiler);
         return false;
     }
 }
