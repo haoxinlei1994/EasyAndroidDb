@@ -1,3 +1,5 @@
 rootProject.name='EasyAndroidDb'
 include ':app'
 include ':database'
+include ':db-complier'
+include ':db-annotation'

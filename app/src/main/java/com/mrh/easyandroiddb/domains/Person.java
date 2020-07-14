@@ -2,21 +2,23 @@ package com.mrh.easyandroiddb.domains;
 
 import androidx.annotation.NonNull;
 
+import com.mrh.db_annotation.Column;
+import com.mrh.db_annotation.Table;
+
 /**
  * Created by haoxinlei on 2020/7/7.
  */
+@Table(tableName = "person", isAsync = true)
 public class Person {
+    @Column("name")
     public String name;
+    @Column("age")
     public int age;
-    public String hobby;
-    public int weight;
 
     public static Person buildTom() {
         Person tom = new Person();
         tom.name = "tom";
         tom.age = 25;
-        tom.hobby = "basketball";
-        tom.weight = 100;
         return tom;
     }
 
@@ -24,14 +26,12 @@ public class Person {
         Person jerry = new Person();
         jerry.name = "jerry";
         jerry.age = 23;
-        jerry.hobby = "football";
-        jerry.weight = 98;
         return jerry;
     }
 
     @NonNull
     @Override
     public String toString() {
-        return "name: " + name + " age: " + age + " hobby: " + hobby + " weight: " + weight;
+        return "name: " + name + " age: " + age;
     }
 }

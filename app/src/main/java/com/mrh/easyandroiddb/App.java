@@ -14,7 +14,7 @@ public class App extends Application {
         super.onCreate();
         new EasySQLiteHelper.Builder(this)
                 .dbName("easy.db")
-                .dbVersion(3)
+                .dbVersion(1)
                 .build();
     }
 }

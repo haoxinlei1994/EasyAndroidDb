@@ -8,8 +8,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.mrh.database.listener.DBListener;
-import com.mrh.easyandroiddb.dao.PersonDao;
 import com.mrh.easyandroiddb.domains.Person;
+import com.mrh.easyandroiddb.domains.PersonDao;
 
 import java.util.ArrayList;
 import java.util.List;
