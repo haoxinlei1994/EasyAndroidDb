@@ -11,7 +11,6 @@ import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
-import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
@@ -19,18 +18,19 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 
+/**
+ * 注解处理器
+ */
 @AutoService(Processor.class)
 public class DbAnnotationProcessor extends AbstractProcessor {
     private Elements mElementUtils;
-    private Messager mMessage;
     private Filer mFiler;
-    private Map<String, DaoProxy> mDaoProxyMap = new HashMap<>();
+    private Map<String, DaoInfo> mDaoProxyMap = new HashMap<>();
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnvironment) {
         super.init(processingEnvironment);
         mElementUtils = processingEnv.getElementUtils();
-        mMessage = processingEnv.getMessager();
         mFiler = processingEnvironment.getFiler();
     }
 
@@ -47,9 +47,15 @@ public class DbAnnotationProcessor extends AbstractProcessor {
         return SourceVersion.latestSupported();
     }
 
+    /**
+     * 搜集注解信息，生成Dao文件
+     * @param set
+     * @param roundEnvironment
+     * @return
+     */
     @Override
     public boolean process(Set<? extends TypeElement> set, RoundEnvironment roundEnvironment) {
-        new DaoProxyFinder().findDaoProxy(roundEnvironment, mDaoProxyMap, mElementUtils);
+        new DaoInfoFinder().findDaoProxy(roundEnvironment, mDaoProxyMap, mElementUtils);
         new DaoFileGenerator().generateDaoFiles(mDaoProxyMap, mFiler);
         return false;
     }

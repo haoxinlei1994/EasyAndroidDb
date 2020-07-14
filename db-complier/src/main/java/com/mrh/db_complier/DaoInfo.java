@@ -7,9 +7,10 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
 /**
+ * 保存被 {@link com.mrh.db_annotation.Table}注解修饰对象的所有信息
  * Created by haoxinlei on 2020/7/13.
  */
-public class DaoProxy {
+public class DaoInfo {
     /**
      * 包名
      */
@@ -30,9 +31,13 @@ public class DaoProxy {
      * 是否为异步dao
      */
     public boolean isAsync;
-
+    /**
+     * 被 {@link com.mrh.db_annotation.Table} 修饰的类
+     */
     public TypeElement typeElement;
-
+    /**
+     * 被 {@link com.mrh.db_annotation.Column} 修饰的属性
+     */
     public List<VariableElement> variableElements = new ArrayList<>();
 
     /**

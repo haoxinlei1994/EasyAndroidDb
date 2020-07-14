@@ -14,17 +14,26 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.Elements;
 
 /**
+ * 搜集所有被 {@link com.mrh.db_annotation.Table} 修饰的类，
+ * 以及类中被 {@link com.mrh.db_annotation.Column} 修饰的属性
+ *
  * Created by haoxinlei on 2020/7/13.
  */
-public class DaoProxyFinder {
+public class DaoInfoFinder {
 
-    public void findDaoProxy(RoundEnvironment roundEnvironment, Map<String, DaoProxy> daoProxyMap, Elements elements) {
+    public void findDaoProxy(RoundEnvironment roundEnvironment, Map<String, DaoInfo> daoProxyMap, Elements elements) {
         daoProxyMap.clear();
         findDaoTableAnnotation(roundEnvironment, daoProxyMap, elements);
         findColumnAnnotation(roundEnvironment, daoProxyMap);
     }
 
-    private void findDaoTableAnnotation(RoundEnvironment roundEnvironment, Map<String, DaoProxy> daoProxyMap, Elements elements) {
+    /**
+     * 搜集所有 {@link com.mrh.db_annotation.Table} 修饰的类，并将类的信息保存
+     * @param roundEnvironment
+     * @param daoProxyMap
+     * @param elements
+     */
+    private void findDaoTableAnnotation(RoundEnvironment roundEnvironment, Map<String, DaoInfo> daoProxyMap, Elements elements) {
         Set<? extends Element> tableAnnotations = roundEnvironment.getElementsAnnotatedWith(Table.class);
         if (tableAnnotations != null) {
             for (Element element : tableAnnotations) {
@@ -32,27 +41,32 @@ public class DaoProxyFinder {
                 PackageElement packageElement = elements.getPackageOf(element);
                 String className = typeElement.getQualifiedName().toString();
                 Table table = typeElement.getAnnotation(Table.class);
-                DaoProxy daoProxy = new DaoProxy();
-                daoProxy.packageName = packageElement.getQualifiedName().toString();
-                daoProxy.className = className;
-                daoProxy.classSimpleName = typeElement.getSimpleName().toString();
-                daoProxy.typeElement = typeElement;
-                daoProxy.isAsync = table.isAsync();
-                daoProxy.tableName = table.tableName();
-                daoProxyMap.put(className, daoProxy);
+                DaoInfo daoInfo = new DaoInfo();
+                daoInfo.packageName = packageElement.getQualifiedName().toString();
+                daoInfo.className = className;
+                daoInfo.classSimpleName = typeElement.getSimpleName().toString();
+                daoInfo.typeElement = typeElement;
+                daoInfo.isAsync = table.isAsync();
+                daoInfo.tableName = table.tableName();
+                daoProxyMap.put(className, daoInfo);
             }
         }
     }
 
-    private void findColumnAnnotation(RoundEnvironment roundEnvironment, Map<String, DaoProxy> daoProxyMap) {
+    /**
+     * 搜集所有 {@link com.mrh.db_annotation.Column} 修饰的属性并保存
+     * @param roundEnvironment
+     * @param daoProxyMap
+     */
+    private void findColumnAnnotation(RoundEnvironment roundEnvironment, Map<String, DaoInfo> daoProxyMap) {
         Set<? extends Element> columnAnnotations = roundEnvironment.getElementsAnnotatedWith(Column.class);
         if (columnAnnotations != null) {
             for (Element element : columnAnnotations) {
                 VariableElement variableElement = (VariableElement) element;
                 TypeElement typeElement = (TypeElement) variableElement.getEnclosingElement();
-                DaoProxy daoProxy = daoProxyMap.get(typeElement.getQualifiedName().toString());
-                if (daoProxy != null) {
-                    daoProxy.variableElements.add(variableElement);
+                DaoInfo daoInfo = daoProxyMap.get(typeElement.getQualifiedName().toString());
+                if (daoInfo != null) {
+                    daoInfo.variableElements.add(variableElement);
                 }
             }
         }

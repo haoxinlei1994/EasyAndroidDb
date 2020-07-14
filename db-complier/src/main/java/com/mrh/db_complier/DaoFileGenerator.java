@@ -13,6 +13,7 @@ import javax.lang.model.element.VariableElement;
 import javax.tools.JavaFileObject;
 
 /**
+ * 根据所搜集的 DaoInfo 信息，生成 Dao文件
  * Created by haoxinlei on 2020/7/13.
  */
 public class DaoFileGenerator {
@@ -34,36 +35,42 @@ public class DaoFileGenerator {
         sTypeMethodMap.put("double", "getDouble");
     }
 
-    public void generateDaoFiles(Map<String, DaoProxy> daoProxyMap, Filer filer) {
+    public void generateDaoFiles(Map<String, DaoInfo> daoProxyMap, Filer filer) {
         if (daoProxyMap == null || daoProxyMap.size() == 0) {
             return;
         }
         Iterator<String> iterator = daoProxyMap.keySet().iterator();
         while (iterator.hasNext()) {
             String key = iterator.next();
-            DaoProxy daoProxy = daoProxyMap.get(key);
-            if (daoProxy != null) {
-                generateDaoFile(daoProxy, filer);
+            DaoInfo daoInfo = daoProxyMap.get(key);
+            if (daoInfo != null) {
+                generateDaoFile(daoInfo, filer);
             }
         }
     }
 
-    private void generateDaoFile(DaoProxy daoProxy, Filer filer) {
+    /**
+     * 生成相应的 Dao.java 文件
+     *
+     * @param daoInfo
+     * @param filer
+     */
+    private void generateDaoFile(DaoInfo daoInfo, Filer filer) {
         StringBuilder fileBuilder = new StringBuilder();
-        fileBuilder.append("package " + daoProxy.packageName + CLAUSE_END)
+        fileBuilder.append("package " + daoInfo.packageName + CLAUSE_END)
                 .append("\nimport android.content.ContentValues;\n")
                 .append("import android.database.Cursor;\n")
-                .append("import com.mrh.database.dao." + (daoProxy.isAsync ? "AsyncDao" : "SyncDao") + CLAUSE_END)
-                .append("import " + daoProxy.className + CLAUSE_END)
+                .append("import com.mrh.database.dao." + (daoInfo.isAsync ? "AsyncDao" : "SyncDao") + CLAUSE_END)
+                .append("import " + daoInfo.className + CLAUSE_END)
                 .append("/**\n* auto generate,do not edit!!\n*/")
-                .append("\npublic class " + daoProxy.getGeneratedJavaFileName() + " extends " + (daoProxy.isAsync ? "AsyncDao<" : "SyncDao<") + daoProxy.classSimpleName + "> {\n")
-                .append(generateConstructor(daoProxy))
-                .append(generateConvertObject(daoProxy))
-                .append(generateParseResult(daoProxy))
+                .append("\npublic class " + daoInfo.getGeneratedJavaFileName() + " extends " + (daoInfo.isAsync ? "AsyncDao<" : "SyncDao<") + daoInfo.classSimpleName + "> {\n")
+                .append(generateConstructor(daoInfo))
+                .append(generateConvertObject(daoInfo))
+                .append(generateParseResult(daoInfo))
                 .append("}");
         Writer writer = null;
         try {
-            JavaFileObject sourceFile = filer.createSourceFile(daoProxy.getGeneratedJavaFileName(), daoProxy.typeElement);
+            JavaFileObject sourceFile = filer.createSourceFile(daoInfo.getGeneratedJavaFileName(), daoInfo.typeElement);
             writer = sourceFile.openWriter();
             writer.write(fileBuilder.toString());
         } catch (IOException e) {
@@ -83,13 +90,13 @@ public class DaoFileGenerator {
     /**
      * 生成构造函数
      *
-     * @param daoProxy
+     * @param daoInfo
      * @return
      */
-    private String generateConstructor(DaoProxy daoProxy) {
+    private String generateConstructor(DaoInfo daoInfo) {
         return new StringBuilder()
-                .append("   public " + daoProxy.classSimpleName + "Dao() {\n")
-                .append("      super(\"" + daoProxy.tableName + "\");\n")
+                .append("   public " + daoInfo.classSimpleName + "Dao() {\n")
+                .append("      super(\"" + daoInfo.tableName + "\");\n")
                 .append("   }\n\n")
                 .toString();
     }
@@ -97,16 +104,16 @@ public class DaoFileGenerator {
     /**
      * 生成 Object 转化 ContentValues 方法
      *
-     * @param daoProxy
+     * @param daoInfo
      * @return
      */
-    private String generateConvertObject(DaoProxy daoProxy) {
+    private String generateConvertObject(DaoInfo daoInfo) {
         StringBuilder method = new StringBuilder()
                 .append("   @Override\n")
-                .append("   public ContentValues convertObject(" + daoProxy.classSimpleName + " obj) {\n")
+                .append("   public ContentValues convertObject(" + daoInfo.classSimpleName + " obj) {\n")
                 .append("     ContentValues contentValues = new ContentValues();\n");
-        for (int i = 0; i < daoProxy.variableElements.size(); i++) {
-            VariableElement field = daoProxy.variableElements.get(i);
+        for (int i = 0; i < daoInfo.variableElements.size(); i++) {
+            VariableElement field = daoInfo.variableElements.get(i);
             Column columnAnnotation = field.getAnnotation(Column.class);
             method.append("     contentValues.put(\"" + columnAnnotation.value() + "\", obj." + field.getSimpleName().toString() + ");\n");
         }
@@ -117,16 +124,16 @@ public class DaoFileGenerator {
     /**
      * 生成 cursor 解析 对象 方法
      *
-     * @param daoProxy
+     * @param daoInfo
      * @return
      */
-    private String generateParseResult(DaoProxy daoProxy) {
+    private String generateParseResult(DaoInfo daoInfo) {
         StringBuilder method = new StringBuilder()
                 .append("   @Override\n")
-                .append("   public " + daoProxy.classSimpleName + " parseResult(Cursor cursor) {\n")
-                .append("       " + daoProxy.classSimpleName + " person = new " + daoProxy.classSimpleName + "();\n");
-        for (int i = 0; i < daoProxy.variableElements.size(); i++) {
-            VariableElement field = daoProxy.variableElements.get(i);
+                .append("   public " + daoInfo.classSimpleName + " parseResult(Cursor cursor) {\n")
+                .append("       " + daoInfo.classSimpleName + " person = new " + daoInfo.classSimpleName + "();\n");
+        for (int i = 0; i < daoInfo.variableElements.size(); i++) {
+            VariableElement field = daoInfo.variableElements.get(i);
             Column columnAnnotation = field.getAnnotation(Column.class);
             method.append("       person." + field.getSimpleName() + " = cursor." + sTypeMethodMap.get(field.asType().toString()) + "(cursor.getColumnIndex(\"" + columnAnnotation.value() + "\"));\n");
         }
