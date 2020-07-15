@@ -57,6 +57,14 @@ public abstract class AsyncDao<T> implements ORMTranslator<T> {
     }
 
     /**
+     * 获取同步dao
+     * @return
+     */
+    public SyncDao<T> getSyncDao() {
+        return mSyncDao;
+    }
+
+    /**
      * 插入一条数据
      *
      * @param obj

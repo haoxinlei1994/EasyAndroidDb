@@ -132,6 +132,8 @@ mPersonDao.queryOne("name = ?", new String[]{"tom"}, new DBListener<Person>() {
 	|--create.sql
 ```
 
+When a new user first install and run app, the create.sql will be executed. when a old user install and run a high version app, the create.sql will not be executed, 
+but the upgrade.sql files will be executed one by one according to you app's database version.
 If you want to update person table, such as add a "hobby" column, then create a upgrade_2.sql file under assets/upgrade dir.
 
 ```
