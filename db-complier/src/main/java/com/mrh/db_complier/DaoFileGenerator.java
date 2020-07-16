@@ -114,13 +114,13 @@ public class DaoFileGenerator {
                 .append("     ContentValues contentValues = new ContentValues();\n");
         for (int i = 0; i < daoInfo.variableElements.size(); i++) {
             VariableElement field = daoInfo.variableElements.get(i);
-            Column columnAnnotation = field.getAnnotation(Column.class);
-            method.append("     contentValues.put(\"" + columnAnnotation.value() + "\", obj." + field.getSimpleName().toString() + ");\n");
+            method.append("     contentValues.put(\"" + getColumnName(field) + "\", obj." + field.getSimpleName().toString() + ");\n");
         }
         return method.append("      return contentValues;\n")
                 .append("   }\n\n")
                 .toString();
     }
+
     /**
      * 生成 cursor 解析 对象 方法
      *
@@ -134,12 +134,21 @@ public class DaoFileGenerator {
                 .append("       " + daoInfo.classSimpleName + " person = new " + daoInfo.classSimpleName + "();\n");
         for (int i = 0; i < daoInfo.variableElements.size(); i++) {
             VariableElement field = daoInfo.variableElements.get(i);
-            Column columnAnnotation = field.getAnnotation(Column.class);
-            method.append("       person." + field.getSimpleName() + " = cursor." + sTypeMethodMap.get(field.asType().toString()) + "(cursor.getColumnIndex(\"" + columnAnnotation.value() + "\"));\n");
+            method.append("       person." + field.getSimpleName() + " = cursor." + sTypeMethodMap.get(field.asType().toString()) + "(cursor.getColumnIndex(\"" + getColumnName(field) + "\"));\n");
         }
         return method
                 .append("       return person;\n")
                 .append("   }\n")
                 .toString();
     }
+
+    private String getColumnName(VariableElement field) {
+        Column columnAnnotation = field.getAnnotation(Column.class);
+        String tableName = columnAnnotation.value();
+        if (tableName == null || tableName.length() == 0) {
+            tableName = field.getSimpleName().toString();
+        }
+        return tableName;
+    }
+
 }

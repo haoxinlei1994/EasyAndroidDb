@@ -12,7 +12,7 @@ import com.mrh.db_annotation.Table;
 public class Person {
     @Column("name")
     public String name;
-    @Column("age")
+    @Column()
     public int age;
 
     public static Person buildTom() {

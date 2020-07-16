@@ -14,7 +14,7 @@ public @interface Table {
      *
      * @return
      */
-    String tableName() default "";
+    String tableName();
 
     /**
      * 是否为异步dao
