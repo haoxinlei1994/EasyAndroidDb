@@ -1,16 +1,20 @@
 package com.mrh.db_complier;
 
 import com.mrh.db_annotation.Column;
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
+import com.squareup.javapoet.TypeSpec;
 
 import java.io.IOException;
-import java.io.Writer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
 import javax.annotation.processing.Filer;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
-import javax.tools.JavaFileObject;
 
 /**
  * 根据所搜集的 DaoInfo 信息，生成 Dao文件
@@ -18,7 +22,8 @@ import javax.tools.JavaFileObject;
  */
 public class DaoFileGenerator {
 
-    private static final String CLAUSE_END = ";\n";
+    private static final ClassName CONTENT_VALUES = ClassName.get("android.content", "ContentValues");
+    private static final ClassName CURSOR = ClassName.get("android.database", "Cursor");
     private static Map<String, String> sTypeMethodMap = new HashMap<>();
 
     static {
@@ -56,49 +61,45 @@ public class DaoFileGenerator {
      * @param filer
      */
     private void generateDaoFile(DaoInfo daoInfo, Filer filer) {
-        StringBuilder fileBuilder = new StringBuilder();
-        fileBuilder.append("package " + daoInfo.packageName + CLAUSE_END)
-                .append("\nimport android.content.ContentValues;\n")
-                .append("import android.database.Cursor;\n")
-                .append("import com.mrh.database.dao." + (daoInfo.isAsync ? "AsyncDao" : "SyncDao") + CLAUSE_END)
-                .append("import " + daoInfo.className + CLAUSE_END)
-                .append("/**\n* auto generate,do not edit!!\n*/")
-                .append("\npublic class " + daoInfo.getGeneratedJavaFileName() + " extends " + (daoInfo.isAsync ? "AsyncDao<" : "SyncDao<") + daoInfo.classSimpleName + "> {\n")
-                .append(generateConstructor(daoInfo))
-                .append(generateConvertObject(daoInfo))
-                .append(generateParseResult(daoInfo))
-                .append("}");
-        Writer writer = null;
+        TypeSpec typeSpec = buildTypeSpace(daoInfo);
+        JavaFile javaFile = JavaFile.builder(daoInfo.packageName, typeSpec)
+                .addFileComment("generate from EasyAndroidDb, don't edit")
+                .build();
         try {
-            JavaFileObject sourceFile = filer.createSourceFile(daoInfo.getGeneratedJavaFileName(), daoInfo.typeElement);
-            writer = sourceFile.openWriter();
-            writer.write(fileBuilder.toString());
+            javaFile.writeTo(filer);
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            if (writer != null) {
-                try {
-                    writer.flush();
-                    writer.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
         }
     }
 
     /**
-     * 生成构造函数
+     * 构建Dao类型
      *
      * @param daoInfo
      * @return
      */
-    private String generateConstructor(DaoInfo daoInfo) {
-        return new StringBuilder()
-                .append("   public " + daoInfo.classSimpleName + "Dao() {\n")
-                .append("      super(\"" + daoInfo.tableName + "\");\n")
-                .append("   }\n\n")
-                .toString();
+    private TypeSpec buildTypeSpace(DaoInfo daoInfo) {
+        ClassName superType = ClassName.get("com.mrh.database.dao", daoInfo.isAsync ? "AsyncDao" : "SyncDao");
+        return TypeSpec.classBuilder(daoInfo.getGeneratedFileSimpleClassName())
+                .addModifiers(Modifier.PUBLIC)
+                .superclass(ParameterizedTypeName.get(superType, ClassName.get(daoInfo.packageName, daoInfo.classSimpleName)))
+                .addMethod(buildConstructor(daoInfo))
+                .addMethod(buildConvertObject(daoInfo))
+                .addMethod(buildParseResult(daoInfo))
+                .build();
+    }
+
+    /**
+     * 创建构造方法
+     *
+     * @param daoInfo
+     * @return
+     */
+    private MethodSpec buildConstructor(DaoInfo daoInfo) {
+        return MethodSpec.constructorBuilder()
+                .addModifiers(Modifier.PUBLIC)
+                .addStatement("super($S)", daoInfo.tableName)
+                .build();
     }
 
     /**
@@ -107,18 +108,19 @@ public class DaoFileGenerator {
      * @param daoInfo
      * @return
      */
-    private String generateConvertObject(DaoInfo daoInfo) {
-        StringBuilder method = new StringBuilder()
-                .append("   @Override\n")
-                .append("   public ContentValues convertObject(" + daoInfo.classSimpleName + " obj) {\n")
-                .append("     ContentValues contentValues = new ContentValues();\n");
+    private MethodSpec buildConvertObject(DaoInfo daoInfo) {
+        MethodSpec.Builder methodBuilder = MethodSpec.methodBuilder("convertObject")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .returns(CONTENT_VALUES)
+                .addParameter(ClassName.get(daoInfo.packageName, daoInfo.classSimpleName), "obj")
+                .addStatement("ContentValues contentValues = new ContentValues()");
         for (int i = 0; i < daoInfo.variableElements.size(); i++) {
             VariableElement field = daoInfo.variableElements.get(i);
-            method.append("     contentValues.put(\"" + getColumnName(field) + "\", obj." + field.getSimpleName().toString() + ");\n");
+            methodBuilder.addStatement("contentValues.put($S, obj.$L)", getColumnName(field), field.getSimpleName().toString());
         }
-        return method.append("      return contentValues;\n")
-                .append("   }\n\n")
-                .toString();
+        methodBuilder.addStatement("return contentValues");
+        return methodBuilder.build();
     }
 
     /**
@@ -127,21 +129,26 @@ public class DaoFileGenerator {
      * @param daoInfo
      * @return
      */
-    private String generateParseResult(DaoInfo daoInfo) {
-        StringBuilder method = new StringBuilder()
-                .append("   @Override\n")
-                .append("   public " + daoInfo.classSimpleName + " parseResult(Cursor cursor) {\n")
-                .append("       " + daoInfo.classSimpleName + " person = new " + daoInfo.classSimpleName + "();\n");
+    private MethodSpec buildParseResult(DaoInfo daoInfo) {
+        MethodSpec.Builder methodBuilder = MethodSpec.methodBuilder("parseResult")
+                .addModifiers(Modifier.PUBLIC)
+                .returns(ClassName.get(daoInfo.packageName, daoInfo.classSimpleName))
+                .addParameter(CURSOR, "cursor")
+                .addAnnotation(Override.class)
+                .addStatement("$L object = new $L()", daoInfo.classSimpleName, daoInfo.classSimpleName);
         for (int i = 0; i < daoInfo.variableElements.size(); i++) {
             VariableElement field = daoInfo.variableElements.get(i);
-            method.append("       person." + field.getSimpleName() + " = cursor." + sTypeMethodMap.get(field.asType().toString()) + "(cursor.getColumnIndex(\"" + getColumnName(field) + "\"));\n");
+            methodBuilder.addStatement("object.$L = cursor.$L(cursor.getColumnIndex($S))", field.getSimpleName(), sTypeMethodMap.get(field.asType().toString()), getColumnName(field));
         }
-        return method
-                .append("       return person;\n")
-                .append("   }\n")
-                .toString();
+        methodBuilder.addStatement("return object");
+        return methodBuilder.build();
     }
 
+    /**
+     * 获取列名
+     * @param field
+     * @return
+     */
     private String getColumnName(VariableElement field) {
         Column columnAnnotation = field.getAnnotation(Column.class);
         String tableName = columnAnnotation.value();

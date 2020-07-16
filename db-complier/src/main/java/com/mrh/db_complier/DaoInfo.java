@@ -41,10 +41,10 @@ public class DaoInfo {
     public List<VariableElement> variableElements = new ArrayList<>();
 
     /**
-     * 获取生成java文件的name
+     * 获取生成java文件的className
      * @return
      */
-    public String getGeneratedJavaFileName() {
+    public String getGeneratedFileSimpleClassName() {
         return classSimpleName + "Dao";
     }
 }
