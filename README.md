@@ -1,4 +1,4 @@
-Android ORM database, support Async CRUD、 Annotation and version upgrade. There are two kinds of easy API to CRUD.
+Android ORM database, support sync and async CRUD、 Annotation and version upgrade with sql style api.
 
 # install
 xxx
@@ -40,87 +40,46 @@ public class Person {
 When you finish Person.java, make your project, then the db-compiler will auto compile the custom annotation and generate a PersonDao.java for Person.java, now you can use PersonDao to CRUD.
 
 # CRUD API
-
-```
-PersonDao mPersonDao = new PersonDao();
-```
-
 ## 1. insert
 
 ```
-Person tom = Person.buildTom();
-mPersonDao.insert(tom, new DBListener<Person>() {
-            @Override
-            public void onComplete(Person result) {
-                Toast.makeText(MainActivity.this, "insert success", Toast.LENGTH_LONG).show();
-            }
-        });
+AsyncSQLiteDb.insertFrom(PersonDao.class)
+                .singleResultListener(person -> Toast.makeText(MainActivity.this, "insert success", Toast.LENGTH_LONG).show())
+                .insert(Person.buildTom());
 ```
 
 ## 2. delete
 
 ```
-mPersonDao.newDeleter()
-                .whereClause("name = ?")
+AsyncSQLiteDb.deleteFrom(PersonDao.class)
+                .whereClause("name=?")
                 .whereArgs("tom")
-                .singleResultListener(result -> Toast.makeText(MainActivity.this, "delete success", Toast.LENGTH_LONG).show())
+                .singleResultListener(person -> Toast.makeText(MainActivity.this, "delete success", Toast.LENGTH_LONG).show())
                 .delete();
 ```
 
-or
-
-```
-mPersonDao.delete("name = ?", new String[]{"tom"}, new DBListener<Person>() {
-            @Override
-            public void onComplete(Person result) {
-                Toast.makeText(MainActivity.this, "delete success", Toast.LENGTH_LONG).show();
-            }
-        });
-```
 
 ## 3. update
 
+
 ```
-Person person = Person.buildTom();
-person.age++;
-mPersonDao.newUpdater()
-                .whereClause("name = ?")
+AsyncSQLiteDb.updateFrom(PersonDao.class)
+                .whereClause("name=?")
                 .whereArgs("tom")
-                .singleResultListener(result -> Toast.makeText(MainActivity.this, "update finish", Toast.LENGTH_LONG).show())
+                .singleResultListener(person -> Toast.makeText(MainActivity.this, "update success", Toast.LENGTH_LONG).show())
                 .update(person);
-```
-
-or
-
-```
-mPersonDao.update(person, "name = ?", new String[]{"tom"}, new DBListener<Person>() {
-            @Override
-            public void onComplete(Person result) {
-                Toast.makeText(MainActivity.this, "update finish", Toast.LENGTH_LONG).show();
-            }
-        });
 ```
 
 ## 4. query
 
 ```
-mPersonDao.newQuery()
-                .whereClause("name = ?")
+AsyncSQLiteDb.queryFrom(PersonDao.class)
+                .whereClause("name=?")
                 .whereArgs("tom")
-                .singleResultListener(person -> mContentTv.setText(person.toString()))
+                .singleResultListener(person -> mContentTv.setText(person == null ? "no result" : person.toString()))
                 .queryOne();
 ```
 
-or
-
-```
-mPersonDao.queryOne("name = ?", new String[]{"tom"}, new DBListener<Person>() {
-            @Override
-            public void onComplete(Person person) {
-                mContentTv.setText(person.toString());
-            }
-        });
-```
 
 # database upgrade
 
