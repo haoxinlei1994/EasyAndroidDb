@@ -3,9 +3,9 @@ package com.mrh.database.helper;
 import android.content.res.AssetManager;
 import android.database.sqlite.SQLiteDatabase;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import com.mrh.database.sqlpaser.SqlParser;
+
+import java.util.List;
 
 /**
  * 执行 assets 目录下的 create.sql 或 upgrade_2.sql 文件
@@ -20,23 +20,9 @@ public class AssetSqlExecutor {
      * @param sqLiteDatabase
      */
     void executeSql(String file, AssetManager assetManager, SQLiteDatabase sqLiteDatabase) throws Exception {
-        BufferedReader reader = null;
-        try {
-            reader = new BufferedReader(new InputStreamReader(assetManager.open(file)));
-            StringBuilder sql = new StringBuilder();
-            String text = "";
-            while ((text = reader.readLine()) != null) {
-                sql.append(text);
-            }
-            sqLiteDatabase.execSQL(sql.toString());
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+        List<String> sqlList = SqlParser.parse(assetManager.open(file));
+        for (String sql : sqlList) {
+            sqLiteDatabase.execSQL(sql);
         }
     }
 }

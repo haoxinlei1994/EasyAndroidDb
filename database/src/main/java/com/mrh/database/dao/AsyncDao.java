@@ -7,9 +7,6 @@ import android.os.HandlerThread;
 import android.os.Looper;
 
 import com.mrh.database.listener.DBListener;
-import com.mrh.database.sqlbuilder.AsyncDeleteBuilder;
-import com.mrh.database.sqlbuilder.AsyncQueryBuilder;
-import com.mrh.database.sqlbuilder.AsyncUpdateBuilder;
 
 import java.util.List;
 
@@ -111,15 +108,6 @@ public abstract class AsyncDao<T> implements ORMTranslator<T> {
     }
 
     /**
-     * 建造者形式删除数据，语义更接近sql
-     *
-     * @return
-     */
-    public AsyncDeleteBuilder<T> newDeleter() {
-        return new AsyncDeleteBuilder<>(this);
-    }
-
-    /**
      * 删除一个表下的所有数据
      */
     public void deleteAll() {
@@ -143,15 +131,6 @@ public abstract class AsyncDao<T> implements ORMTranslator<T> {
                 mMainHandler.post(() -> listener.onComplete(obj));
             }
         });
-    }
-
-    /**
-     * 建造者形式更新数据，语义更接近sql
-     *
-     * @return
-     */
-    public AsyncUpdateBuilder<T> newUpdater() {
-        return new AsyncUpdateBuilder<>(this);
     }
 
     /**
@@ -199,14 +178,5 @@ public abstract class AsyncDao<T> implements ORMTranslator<T> {
                 mMainHandler.post(() -> listener.onComplete(result));
             }
         });
-    }
-
-    /**
-     * 建造者形式查询数据，语义更接近sql
-     *
-     * @return
-     */
-    public AsyncQueryBuilder<T> newQuery() {
-        return new AsyncQueryBuilder<>(this);
     }
 }

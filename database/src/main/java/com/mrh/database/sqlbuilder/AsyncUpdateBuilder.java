@@ -14,13 +14,13 @@ public class AsyncUpdateBuilder<T> extends AsyncSqlBuilder<T> {
     }
 
     @Override
-    public AsyncUpdateBuilder whereClause(String whereClause) {
+    public AsyncUpdateBuilder<T> whereClause(String whereClause) {
         super.whereClause(whereClause);
         return this;
     }
 
     @Override
-    public AsyncUpdateBuilder whereArgs(String... whereArgs) {
+    public AsyncUpdateBuilder<T> whereArgs(String... whereArgs) {
         super.whereArgs(whereArgs);
         return this;
     }

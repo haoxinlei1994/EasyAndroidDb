@@ -26,35 +26,32 @@ public class PersonDaoTest {
     public void testInsert() {
         mSyncPersonDao.insert(Person.buildTom());
         Assert.assertEquals(mSyncPersonDao.queryOne("name=?", new String[]{"tom"}).name, "tom");
+        testDelete();
     }
 
     @Test
     public void testUpdate() {
+        mSyncPersonDao.insert(Person.buildTom());
         Person tom = Person.buildTom();
         tom.age++;
-        mSyncPersonDao.newUpdater()
-                .whereClause("name = ?")
-                .whereArgs("tom")
-                .update(tom);
+        mSyncPersonDao.update(tom, "name=?", new String[]{"tom"});
         Assert.assertEquals(mSyncPersonDao.queryOne("name=?", new String[]{"tom"}).age, 26);
+        testDelete();
     }
 
     @Test
     public void testQuery() {
-        Person person = mSyncPersonDao.newQuery()
-                .whereClause("name = ?")
-                .whereArgs("tom")
-                .queryOne();
+        mSyncPersonDao.insert(Person.buildTom());
+        Person person = mSyncPersonDao.queryOne("name=?", new String[]{"tom"});
         Assert.assertEquals(person.name, "tom");
-        Assert.assertEquals(person.age, 26);
+        Assert.assertEquals(person.age, 25);
+        testDelete();
     }
 
     @Test
     public void testDelete() {
-        mSyncPersonDao.newDeleter()
-                .whereClause("name=?")
-                .whereArgs("tom")
-                .delete();
+        mSyncPersonDao.insert(Person.buildTom());
+        mSyncPersonDao.delete("name=?", new String[]{"tom"});
         Assert.assertNull(mSyncPersonDao.queryOne("name=?", new String[]{"tom"}));
     }
 

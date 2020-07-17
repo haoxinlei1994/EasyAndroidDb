@@ -13,13 +13,13 @@ public class SyncUpdateBuilder<T> extends SyncSqlBuilder<T> {
     }
 
     @Override
-    public SyncUpdateBuilder whereClause(String whereClause) {
+    public SyncUpdateBuilder<T> whereClause(String whereClause) {
         super.whereClause(whereClause);
         return this;
     }
 
     @Override
-    public SyncUpdateBuilder whereArgs(String... whereArgs) {
+    public SyncUpdateBuilder<T> whereArgs(String... whereArgs) {
         super.whereArgs(whereArgs);
         return this;
     }

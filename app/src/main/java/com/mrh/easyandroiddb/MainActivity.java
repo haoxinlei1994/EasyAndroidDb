@@ -7,7 +7,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.mrh.database.listener.DBListener;
+import com.mrh.database.crud.AsyncSQLiteDb;
 import com.mrh.easyandroiddb.domains.Person;
 import com.mrh.easyandroiddb.domains.PersonDao;
 
@@ -16,7 +16,6 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private PersonDao mPersonDao = new PersonDao();
     private TextView mContentTv;
 
     @Override
@@ -27,23 +26,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void insertOne(View view) {
-        Person tom = Person.buildTom();
-        mPersonDao.insert(tom, new DBListener<Person>() {
-            @Override
-            public void onComplete(Person result) {
-                Toast.makeText(MainActivity.this, "insert success", Toast.LENGTH_LONG).show();
-            }
-        });
+        AsyncSQLiteDb.insertFrom(PersonDao.class)
+                .singleResultListener(person -> Toast.makeText(MainActivity.this, "insert success", Toast.LENGTH_LONG).show())
+                .insert(Person.buildTom());
     }
 
     public void insertList(View view) {
-        List<Person> persons = generatePersons();
-        mPersonDao.insert(persons, new DBListener<List<Person>>() {
-            @Override
-            public void onComplete(List<Person> result) {
-                Toast.makeText(MainActivity.this, "insert success", Toast.LENGTH_LONG).show();
-            }
-        });
+        AsyncSQLiteDb.insertFrom(PersonDao.class)
+                .multipleResultListener(result -> Toast.makeText(MainActivity.this, "insert success", Toast.LENGTH_LONG).show())
+                .insert(generatePersons());
     }
 
     private List<Person> generatePersons() {
@@ -56,74 +47,39 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void deleteTom(View view) {
-//        //第一种删除方式
-//        mPersonDao.delete("name = ?", new String[]{"tom"}, new DBListener<Person>() {
-//            @Override
-//            public void onComplete(Person result) {
-//                Toast.makeText(MainActivity.this, "delete success", Toast.LENGTH_LONG).show();
-//            }
-//        });
-        //第二种删除方式，使用建造者形式
-        mPersonDao.newDeleter()
-                .whereClause("name = ?")
+        AsyncSQLiteDb.deleteFrom(PersonDao.class)
+                .whereClause("name=?")
                 .whereArgs("tom")
-                .singleResultListener(result -> Toast.makeText(MainActivity.this, "delete success", Toast.LENGTH_LONG).show())
+                .singleResultListener(person -> Toast.makeText(MainActivity.this, "delete success", Toast.LENGTH_LONG).show())
                 .delete();
     }
 
     public void deleteAll(View view) {
-        mPersonDao.deleteAll();
+        AsyncSQLiteDb.deleteFrom(PersonDao.class)
+                .singleResultListener(person -> Toast.makeText(MainActivity.this, "delete success", Toast.LENGTH_LONG).show())
+                .deleteAll();
     }
 
     public void updateTom(View view) {
         Person person = Person.buildTom();
         person.age++;
-        //第一种更新方式
-//        mPersonDao.update(person, "name = ?", new String[]{"tom"}, new DBListener<Person>() {
-//            @Override
-//            public void onComplete(Person result) {
-//                Toast.makeText(MainActivity.this, "update finish", Toast.LENGTH_LONG).show();
-//            }
-//        });
-        //第二种更新方式，使用建造者形式
-        mPersonDao.newUpdater()
-                .whereClause("name = ?")
+        AsyncSQLiteDb.updateFrom(PersonDao.class)
+                .whereClause("name=?")
                 .whereArgs("tom")
-                .singleResultListener(result -> Toast.makeText(MainActivity.this, "update finish", Toast.LENGTH_LONG).show())
+                .singleResultListener(result -> Toast.makeText(MainActivity.this, "update success", Toast.LENGTH_LONG).show())
                 .update(person);
     }
 
     public void queryTom(View view) {
-//        第一种查询方式
-//        mPersonDao.queryOne("name = ?", new String[]{"tom"}, new DBListener<Person>() {
-//            @Override
-//            public void onComplete(Person result) {
-//                mContentTv.setText(result.toString());
-//            }
-//        });
-        //第二种查询方式,使用builder形式
-        mPersonDao.newQuery()
-                .whereClause("name = ?")
+        AsyncSQLiteDb.queryFrom(PersonDao.class)
+                .whereClause("name=?")
                 .whereArgs("tom")
-                .singleResultListener(result -> mContentTv.setText(result.toString()))
+                .singleResultListener(result -> mContentTv.setText(result == null ? "no result" : result.toString()))
                 .queryOne();
     }
 
     public void queryAll(View view) {
-//        第一种查询方式
-//        mPersonDao.queryAll(new DBListener<List<Person>>() {
-//            @Override
-//            public void onComplete(List<Person> result) {
-//                StringBuilder builder = new StringBuilder();
-//                for (int i = 0; i < result.size(); i++) {
-//                    builder.append(result.get(i));
-//                    builder.append("\n");
-//                }
-//                mContentTv.setText(builder.toString());
-//            }
-//        });
-        //第二种查询方式，使用builder形式
-        mPersonDao.newQuery()
+        AsyncSQLiteDb.queryFrom(PersonDao.class)
                 .multipleResultListener(result -> {
                     StringBuilder builder = new StringBuilder();
                     for (int i = 0; i < result.size(); i++) {

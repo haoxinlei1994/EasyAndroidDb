@@ -22,7 +22,7 @@ public class AsyncQueryBuilder<T> extends AsyncSqlBuilder<T> {
     }
 
     @Override
-    public AsyncQueryBuilder whereArgs(String... whereArgs) {
+    public AsyncQueryBuilder<T> whereArgs(String... whereArgs) {
         super.whereArgs(whereArgs);
         return this;
     }
@@ -33,7 +33,7 @@ public class AsyncQueryBuilder<T> extends AsyncSqlBuilder<T> {
         return this;
     }
 
-    public AsyncQueryBuilder order(String order) {
+    public AsyncQueryBuilder<T> order(String order) {
         mOrder = order;
         return this;
     }

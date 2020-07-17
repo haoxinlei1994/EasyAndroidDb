@@ -4,9 +4,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.mrh.database.EasySQLiteHelper;
-import com.mrh.database.sqlbuilder.SyncDeleteBuilder;
-import com.mrh.database.sqlbuilder.SyncQueryBuilder;
-import com.mrh.database.sqlbuilder.SyncUpdateBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -89,14 +86,6 @@ public abstract class SyncDao<T> implements ORMTranslator<T> {
     }
 
     /**
-     * 通过建造者形式的删除数据方法，语义更接近sql
-     * @return
-     */
-    public SyncDeleteBuilder<T> newDeleter() {
-        return new SyncDeleteBuilder<>(this);
-    }
-
-    /**
      * 更新数据
      *
      * @param obj
@@ -107,14 +96,6 @@ public abstract class SyncDao<T> implements ORMTranslator<T> {
         if (obj != null) {
             mWritableDatabase.updateWithOnConflict(mTableName, convertObject(obj), whereClause, whereArgs, mConflictPolicy);
         }
-    }
-
-    /**
-     * 通过建造者形式更新数据方法，语义更接近sql
-     * @return
-     */
-    public SyncUpdateBuilder<T> newUpdater() {
-        return new SyncUpdateBuilder<>(this);
     }
 
     /**
@@ -165,13 +146,5 @@ public abstract class SyncDao<T> implements ORMTranslator<T> {
             }
         }
         return result;
-    }
-
-    /**
-     * 通过建造者形式查询，语义更接近sql
-     * @return
-     */
-    public SyncQueryBuilder<T> newQuery() {
-        return new SyncQueryBuilder<>(this);
     }
 }

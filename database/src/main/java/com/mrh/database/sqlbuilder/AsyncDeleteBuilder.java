@@ -14,7 +14,7 @@ public class AsyncDeleteBuilder<T> extends AsyncSqlBuilder<T> {
     }
 
     @Override
-    public AsyncDeleteBuilder whereClause(String whereClause) {
+    public AsyncDeleteBuilder<T> whereClause(String whereClause) {
         super.whereClause(whereClause);
         return this;
     }
