@@ -3,6 +3,10 @@ package com.mrh.db_complier;
 import com.google.auto.service.AutoService;
 import com.mrh.db_annotation.Column;
 import com.mrh.db_annotation.Table;
+import com.mrh.db_complier.code.DaoFileGenerator;
+import com.mrh.db_complier.code.DefaultDaoFileGenerator;
+import com.mrh.db_complier.finder.DaoInfoFinder;
+import com.mrh.db_complier.finder.DefaultDaoInfoFinder;
 
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -26,6 +30,8 @@ public class DbAnnotationProcessor extends AbstractProcessor {
     private Elements mElementUtils;
     private Filer mFiler;
     private Map<String, DaoInfo> mDaoInfoMap = new HashMap<>();
+    private DaoInfoFinder mDaoInfoFinder = new DefaultDaoInfoFinder();
+    private DaoFileGenerator mDaoFileGenerator = new DefaultDaoFileGenerator();
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnvironment) {
@@ -55,8 +61,8 @@ public class DbAnnotationProcessor extends AbstractProcessor {
      */
     @Override
     public boolean process(Set<? extends TypeElement> set, RoundEnvironment roundEnvironment) {
-        new DaoInfoFinder().findDaoProxy(roundEnvironment, mDaoInfoMap, mElementUtils);
-        new DaoFileGenerator().generateDaoFiles(mDaoInfoMap, mFiler);
+        mDaoInfoFinder.findDaoProxy(roundEnvironment, mDaoInfoMap, mElementUtils);
+        mDaoFileGenerator.generateDaoFiles(mDaoInfoMap, mFiler);
         return false;
     }
 }

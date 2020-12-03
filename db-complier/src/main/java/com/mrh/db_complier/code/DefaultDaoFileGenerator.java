@@ -1,6 +1,7 @@
-package com.mrh.db_complier;
+package com.mrh.db_complier.code;
 
 import com.mrh.db_annotation.Column;
+import com.mrh.db_complier.DaoInfo;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
@@ -20,7 +21,7 @@ import javax.lang.model.element.VariableElement;
  * 根据所搜集的 DaoInfo 信息，生成 Dao文件
  * Created by haoxinlei on 2020/7/13.
  */
-public class DaoFileGenerator {
+public class DefaultDaoFileGenerator implements DaoFileGenerator{
 
     private static final ClassName CONTENT_VALUES = ClassName.get("android.content", "ContentValues");
     private static final ClassName CURSOR = ClassName.get("android.database", "Cursor");
@@ -40,6 +41,7 @@ public class DaoFileGenerator {
         sTypeMethodMap.put("double", "getDouble");
     }
 
+    @Override
     public void generateDaoFiles(Map<String, DaoInfo> daoProxyMap, Filer filer) {
         if (daoProxyMap == null || daoProxyMap.size() == 0) {
             return;

@@ -1,7 +1,8 @@
-package com.mrh.db_complier;
+package com.mrh.db_complier.finder;
 
 import com.mrh.db_annotation.Column;
 import com.mrh.db_annotation.Table;
+import com.mrh.db_complier.DaoInfo;
 
 import java.util.Map;
 import java.util.Set;
@@ -16,11 +17,12 @@ import javax.lang.model.util.Elements;
 /**
  * 搜集所有被 {@link com.mrh.db_annotation.Table} 修饰的类，
  * 以及类中被 {@link com.mrh.db_annotation.Column} 修饰的属性
- *
+ * <p>
  * Created by haoxinlei on 2020/7/13.
  */
-public class DaoInfoFinder {
+public class DefaultDaoInfoFinder implements DaoInfoFinder {
 
+    @Override
     public void findDaoProxy(RoundEnvironment roundEnvironment, Map<String, DaoInfo> daoProxyMap, Elements elements) {
         daoProxyMap.clear();
         findDaoTableAnnotation(roundEnvironment, daoProxyMap, elements);
