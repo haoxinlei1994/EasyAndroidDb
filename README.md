@@ -1,7 +1,6 @@
 Android ORM database, support sync and async CRUD、 Annotation and version upgrade with sql style api.
 
-# install
-xxx
+
 # how to use
 ## 1. init database
 In your Application's onCreate method:
