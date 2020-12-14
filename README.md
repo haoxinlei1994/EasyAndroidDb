@@ -1,4 +1,4 @@
-Easy Android ORM database for learnning what is ORM, support sync and async CRUD、Compile time annotation and version upgrade with sql style api. 
+Easy Android ORM database for learnning what is ORM, support sync and async CRUD、compile time annotation and version upgrade with sql style api. 
 
 
 # how to use
